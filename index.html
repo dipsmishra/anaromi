@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="description" content="Maths - Sum Generator">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maths - Sum Generator</title>
+  <style>
+    #page {
+      margin: 0 auto;
+      overflow: hidden;
+      font-family: monospace, sans-serif;
+      font-size: 18pt;
+      font-weight: normal;
+      font-stretch: normal;
+      font-style: normal;
+      line-height: 2.5;
+      letter-spacing: normal;
+      color: #191c5f;
+    }
+    .serial-no {
+      color: #808080;
+      font-size: 10pt;
+    }
+    .answer {
+      text-decoration: underline;
+    }
+    .amount-label {
+      top: 0;
+      width: 280px;
+      height: 39px;
+      font-size: 16px;
+      font-weight: bold;
+      line-height: 2.38;
+    }
+    .amount {
+      top: 5px;
+      left: 118px;
+      width: 130px;
+      height: 24px;
+      padding: 0 18px 0 8px;
+      font-size: 16px;
+      line-height: 24px;
+      color: #191c5f;
+      outline: none;
+      background: transparent;
+      border: none transparent;
+      border-radius: 0;
+      border-bottom: 2px solid #191c5fa0;
+      -webkit-appearance: none;
+    }
+    #edit-amount {
+      top: 3px;
+      position: relative;
+      opacity: 0.4;
+    }
+    #table {
+      text-align: right;
+    }
+    @media print{@page {size: landscape}}
+  </style>
+</head>
+<body class="gradient-bg">
+<div id="page">
+  <div>
+    <div id="table"></div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+          integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script language="JavaScript">
+    const arrayToTable = function ($, data, options) {
+      "use strict";
+      let table = $('<table />'),
+        row,
+        i,
+        j,
+        defaults = {
+          attrs: {} // attributes for the table element, can be used to
+        };
+      options = $.extend(defaults, options);
+      const rowsPerColumn = 10;
+      table.attr(options.attrs);
+      const totalColumns = data.length / rowsPerColumn;
+      for (i = 0; i < data.length && i < rowsPerColumn; i++) {
+        row = $('<tr />');
+        for (let column = 0; column < totalColumns; column++) {
+          if(data[i + (column * rowsPerColumn)][0] !== '') {
+            row.append($('<td />').addClass('serial-no').html((i + (column * rowsPerColumn) + 1) + '.'));
+            for (j = 0; j < data[i].length; j++) {
+              row.append($('<td />').html(data[i + (column * rowsPerColumn)][j]));
+            }
+            row.append($('<td />').addClass('answer').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'));
+            row.append($('<td />').html('&nbsp;&nbsp;'));
+          }
+        }
+        table.append(row)
+      }
+      return table;
+    };
+    const generate = function (max1, max2, op, num) {
+      const data = [];
+      for (let i = 0; i < num; i++) {
+        let row = [];
+        let num1 = parseInt(Math.random() * (max1 + 1));
+        let num2 = parseInt(Math.random() * (max2 + 1));
+        row.push(String(op !== '-' ? num1 : Math.max(num1, num2)).padStart(2, ' '));
+        row.push(op);
+        row.push(String(op !== '-' ? num2 : Math.min(num1, num2)).padStart(2, ' '));
+        row.push('=');
+        data.push(row);
+      }
+      return data;
+    };
+    const shuffle = function (ar) {
+      for(let i = ar.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * i);
+        const temp = ar[i];
+        ar[i] = ar[j];
+        ar[j] = temp;
+      }
+      return ar;
+    };
+    function populateTable($) {
+      const maxAddition1 = 20;
+      const maxAddition2 = 20;
+      const numAdditions = 20;
+      const maxSubtraction1 = 20;
+      const maxSubtraction2 = 20;
+      const numSubtractions = 10;
+      const maxMultiplication1 = 7;
+      const maxMultiplication2 = 10;
+      const numMultiplications = 10;
+
+      const data = [];
+      data.push(...generate(maxAddition1, maxAddition2,'+', numAdditions))
+      data.push(...generate(maxSubtraction1, maxSubtraction2,'-', numSubtractions))
+      data.push(...generate(maxMultiplication1, maxMultiplication2,'X', numMultiplications))
+
+      const table = arrayToTable($, shuffle(data), {
+        attrs: {class: 'table'}
+      })
+      $('#table').append(table);
+    }
+    function initSlider($) {
+      populateTable($);
+    }
+    $(document).ready(function(){
+      initSlider($);
+    });
+  </script>
+</div>
+</body>
+</html>
