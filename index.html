@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <meta name="description" content="Maths - Sum Generator">
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="pragma" content="no-cache" />
+  <meta http-equiv="expires" content="0" />
+  <meta name="description" content="Maths - Sum Generator v2">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Maths - Sum Generator</title>
+  <title>Maths - Sum Generator v2</title>
   <style>
     #page {
       margin: 0 auto;
@@ -22,84 +22,80 @@
       letter-spacing: normal;
       color: #191c5f;
     }
+    #content
+    {
+      padding: 3.84615384615385%;
+    }
+    .columns
+    {
+      -moz-column-width: 11.5em;
+      -webkit-column-width: 11.5em;
+      column-width: 11.5em;
+    }
+    .columns ul
+    {
+      margin: 0;
+      padding: 0;
+      list-style-type: none;
+    }
+    .columns ul li:first-child
+    {
+      margin-top:0;
+    }
+    li {
+      display: inline-block;
+      width: 100%
+    }
     .serial-no {
       color: #808080;
       font-size: 10pt;
     }
     .answer {
       text-decoration: underline;
+      padding-left: 1em;
     }
-    .amount-label {
-      top: 0;
-      width: 280px;
-      height: 39px;
-      font-size: 16px;
-      font-weight: bold;
-      line-height: 2.38;
-    }
-    .amount {
-      top: 5px;
-      left: 118px;
-      width: 130px;
-      height: 24px;
-      padding: 0 18px 0 8px;
-      font-size: 16px;
-      line-height: 24px;
-      color: #191c5f;
-      outline: none;
-      background: transparent;
-      border: none transparent;
-      border-radius: 0;
-      border-bottom: 2px solid #191c5fa0;
-      -webkit-appearance: none;
-    }
-    #edit-amount {
-      top: 3px;
-      position: relative;
-      opacity: 0.4;
-    }
-    #table {
+    table {
       text-align: right;
+    }
+    table tr td.digits {
+      width: 2em;
     }
     @media print{@page {size: landscape}}
   </style>
 </head>
 <body class="gradient-bg">
 <div id="page">
-  <div>
-    <div id="table"></div>
-  </div>
+  <div id="content"></div>
   <script src="https://code.jquery.com/jquery-3.3.1.min.js"
           integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script language="JavaScript">
     const arrayToTable = function ($, data, options) {
       "use strict";
-      let table = $('<table />'),
-        row,
-        i,
-        j,
-        defaults = {
-          attrs: {} // attributes for the table element, can be used to
-        };
-      options = $.extend(defaults, options);
-      const rowsPerColumn = 10;
-      table.attr(options.attrs);
-      const totalColumns = data.length / rowsPerColumn;
-      for (i = 0; i < data.length && i < rowsPerColumn; i++) {
-        row = $('<tr />');
-        for (let column = 0; column < totalColumns; column++) {
-          if(data[i + (column * rowsPerColumn)][0] !== '') {
-            row.append($('<td />').addClass('serial-no').html((i + (column * rowsPerColumn) + 1) + '.'));
-            for (j = 0; j < data[i].length; j++) {
-              row.append($('<td />').html(data[i + (column * rowsPerColumn)][j]));
-            }
-            row.append($('<td />').addClass('answer').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'));
-            row.append($('<td />').html('&nbsp;&nbsp;'));
+      const outerDiv = $('<div />').addClass('columns');
+      const list = $('<ul />');
+      for (let i = 0; i < data.length; i++) {
+        let listItem = $('<li />');
+        let table = $('<table />'),
+          defaults = {
+            attrs: {} // attributes for the table element, can be used to
+          };
+        options = $.extend(defaults, options);
+        table.attr(options.attrs);
+        let row = $('<tr />');
+        if(data[i][0] !== '') {
+          row.append($('<td />').addClass('serial-no').addClass('digits').html((i + 1) + '.'));
+          for (let j = 0; j < data[i].length; j++) {
+            row.append($('<td />').addClass('digits').html(data[i][j]));
           }
+          row.append($('<td />').addClass('answer').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'));
+          row.append($('<td />').html('&nbsp;&nbsp;'));
         }
-        table.append(row)
+        table.append(row);
+        listItem.append(table);
+        list.append(listItem);
       }
-      return table;
+      outerDiv.append(list);
+      return outerDiv;
     };
     const generate = function (max1, max2, op, num) {
       const data = [];
@@ -143,7 +139,7 @@
       const table = arrayToTable($, shuffle(data), {
         attrs: {class: 'table'}
       })
-      $('#table').append(table);
+      $('#content').append(table);
     }
     function initSlider($) {
       populateTable($);
