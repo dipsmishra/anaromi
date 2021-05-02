@@ -5,10 +5,10 @@
   <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="pragma" content="no-cache" />
   <meta http-equiv="expires" content="0" />
-  <meta name="description" content="Maths - Sum Generator v2">
+  <meta name="description" content="Maths - Sum Generator - v3">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Maths - Sum Generator v2</title>
+  <title>Maths - Sum Generator - v3</title>
   <style>
     #page {
       margin: 0 auto;
@@ -69,7 +69,7 @@
   <script src="https://code.jquery.com/jquery-3.3.1.min.js"
           integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script language="JavaScript">
-    const arrayToTable = function ($, data, options) {
+    const arrayToHtml = function ($, data, options) {
       "use strict";
       const outerDiv = $('<div />').addClass('columns');
       const list = $('<ul />');
@@ -97,12 +97,15 @@
       outerDiv.append(list);
       return outerDiv;
     };
+    const randomInRange = function(x,y) {
+      return x + crypto.getRandomValues(new Uint32Array(1))[0] % (y - x + 1);
+    }
     const generate = function (max1, max2, op, num) {
       const data = [];
       for (let i = 0; i < num; i++) {
         let row = [];
-        let num1 = parseInt(Math.random() * (max1 + 1));
-        let num2 = parseInt(Math.random() * (max2 + 1));
+        let num1 = randomInRange(0, max1);
+        let num2 = randomInRange(0, max2);
         row.push(String(op !== '-' ? num1 : Math.max(num1, num2)).padStart(2, ' '));
         row.push(op);
         row.push(String(op !== '-' ? num2 : Math.min(num1, num2)).padStart(2, ' '));
@@ -136,7 +139,7 @@
       data.push(...generate(maxSubtraction1, maxSubtraction2,'-', numSubtractions))
       data.push(...generate(maxMultiplication1, maxMultiplication2,'X', numMultiplications))
 
-      const table = arrayToTable($, shuffle(data), {
+      const table = arrayToHtml($, shuffle(data), {
         attrs: {class: 'table'}
       })
       $('#content').append(table);
