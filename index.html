@@ -5,10 +5,10 @@
   <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="pragma" content="no-cache" />
   <meta http-equiv="expires" content="0" />
-  <meta name="description" content="Maths - Sum Generator - v3">
+  <meta name="description" content="Maths - Sum Generator - v4">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Maths - Sum Generator - v3</title>
+  <title>Maths - Sum Generator - v4</title>
   <style>
     #page {
       margin: 0 auto;
@@ -18,56 +18,62 @@
       font-weight: normal;
       font-stretch: normal;
       font-style: normal;
-      line-height: 2.5;
+      line-height: 2;
       letter-spacing: normal;
       color: #191c5f;
     }
-    #content
-    {
-      padding: 3.84615384615385%;
+    #content {
+      padding: 0.5em;
     }
-    .columns
-    {
-      -moz-column-width: 11.5em;
-      -webkit-column-width: 11.5em;
-      column-width: 11.5em;
+    .columns {
+      -moz-column-width: 10em;
+      -webkit-column-width: 10em;
+      column-width: 10em;
     }
-    .columns ul
-    {
+    .columns ul {
       margin: 0;
       padding: 0;
       list-style-type: none;
     }
-    .columns ul li:first-child
-    {
-      margin-top:0;
-    }
-    li {
+    .columns ul li {
       display: inline-block;
-      width: 100%
+      width: 100%;
     }
     .serial-no {
-      color: #808080;
+      color: #303030;
       font-size: 10pt;
     }
     .answer {
       text-decoration: underline;
-      padding-left: 1em;
+      padding-left: 0.25em;
     }
-    table {
-      text-align: right;
+    table tr td {
+      text-align: center;
     }
     table tr td.digits {
-      width: 2em;
+      width: 1.5em;
     }
-    @media print{@page {size: landscape}}
+    table tr td.op.digits {
+      width: 1em;
+    }
+    table tr td.eq.digits {
+      width: 1em;
+    }
+    @media print {
+      @page { size: A4 landscape; }
+      body {
+        margin: 0;
+        padding: 0;
+        height: 190mm;
+        width: 297mm;
+      }
+    }
   </style>
 </head>
-<body class="gradient-bg">
+<body>
 <div id="page">
   <div id="content"></div>
-  <script src="https://code.jquery.com/jquery-3.3.1.min.js"
-          integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
   <script language="JavaScript">
     const arrayToHtml = function ($, data, options) {
       "use strict";
@@ -84,9 +90,12 @@
         let row = $('<tr />');
         if(data[i][0] !== '') {
           row.append($('<td />').addClass('serial-no').addClass('digits').html((i + 1) + '.'));
-          for (let j = 0; j < data[i].length; j++) {
-            row.append($('<td />').addClass('digits').html(data[i][j]));
-          }
+
+          row.append($('<td />').addClass('digits').html(data[i][0]));
+          row.append($('<td />').addClass('op').addClass('digits').html(data[i][1]));
+          row.append($('<td />').addClass('digits').html(data[i][2]));
+          row.append($('<td />').addClass('eq').addClass('digits').html(data[i][3]));
+
           row.append($('<td />').addClass('answer').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'));
           row.append($('<td />').html('&nbsp;&nbsp;'));
         }
