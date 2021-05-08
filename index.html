@@ -5,25 +5,28 @@
   <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="pragma" content="no-cache" />
   <meta http-equiv="expires" content="0" />
-  <meta name="description" content="Maths - Sum Generator - v5">
+  <meta name="description" content="Maths - Sum Generator - v6">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Maths - Sum Generator - v5</title>
+  <title>Maths - Sum Generator - v6</title>
+  <link href='https://fonts.googleapis.com/css?family=Orbitron&text=0123456789:' rel='stylesheet' type='text/css'/>
   <style>
     #page {
       margin: 0 auto;
+      padding-top: 4em;
       overflow: hidden;
       font-family: monospace, sans-serif;
       font-size: 18pt;
       font-weight: normal;
       font-stretch: normal;
       font-style: normal;
-      line-height: 2;
+      line-height: 1.95;
       letter-spacing: normal;
       color: #191c5f;
     }
     #content {
       padding: 0.5em;
+      display: none;
     }
     .columns {
       -moz-column-width: 10em;
@@ -40,13 +43,25 @@
       width: 100%;
     }
     .columns ul li.correct {
-      background-color: darkseagreen;
+      color: darkseagreen;
     }
     .columns ul li.incorrect {
-      background-color: indianred;
+      color: indianred;
     }
     .columns ul li.not-attempted {
-      background-color: cornflowerblue;
+      color: cornflowerblue;
+    }
+    .columns ul li.correct .answer-text {
+      color: darkseagreen;
+      border-bottom: 2px solid darkseagreen;
+    }
+    .columns ul li.incorrect .answer-text {
+      color: indianred;
+      border-bottom: 2px solid indianred;
+    }
+    .columns ul li.not-attempted .answer-text {
+      color: cornflowerblue;
+      border-bottom: 2px solid cornflowerblue;
     }
     .serial-no {
       color: #303030;
@@ -73,7 +88,7 @@
       height: 1.5em;
       padding: 0 18px 0 8px;
       font-size: 18pt;
-      line-height: 1.5;
+      line-height: 1.4;
       outline: none;
       color: #191c5f;
       background: transparent;
@@ -83,14 +98,55 @@
       -webkit-appearance: none;
     }
     #results {
-      display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      background-color: #fdf978a0;
+      background-color: #fdf978;
       text-align: center;
-      font-size: 14pt;
+      font-family: monospace, sans-serif;
+      font-weight: normal;
+      font-stretch: normal;
+      font-style: normal;
+      line-height: 1.2;
+      letter-spacing: normal;
+      color: #191c5f;
       width: 100%;
+
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      align-items: center;
+      align-content: flex-start;
+    }
+    #results > div {
+      text-align: left;
+      padding: 0.25em 1em;
+      align-self: center;
+    }
+    #timer, #start {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: bold;
+      font-size: 14pt;
+      width: 105px;
+      height: 30px;
+      flex: none;
+    }
+    #timer {
+      line-height: 30px;
+    }
+    #message {
+      font-size: 12pt;
+      flex-grow: 1;
+      flex-basis: auto;
+    }
+    .hidden {
+      border: 0;
+      clip: rect(0 0 0 0);
+      height: 1px;
+      margin: -1px;
+      overflow: hidden;
+      padding: 0;
+      position: absolute;
+      width: 1px;
     }
     @media print {
       @page { size: A4 landscape; }
@@ -100,17 +156,61 @@
         height: 190mm;
         width: 297mm;
       }
+      #results {
+        position: initial;
+      }
+      #page {
+        padding-top: initial;
+      }
+      #content {
+        display: block;
+      }
+      #start {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
+<div id="results"><div id="timer"><button id="start">Start !</button></div><div id="message"></div></div>
 <div id="page">
   <form method="POST" onsubmit="return false;">
     <div id="content"></div>
-    <div id="results"></div>
   </form>
   <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
   <script language="JavaScript">
+    const maxAddition1 = 20;
+    const maxAddition2 = 20;
+    const numAdditions = 20;
+    const maxSubtraction1 = 20;
+    const maxSubtraction2 = 20;
+    const numSubtractions = 10;
+    const maxMultiplication1 = 7;
+    const maxMultiplication2 = 10;
+    const numMultiplications = 10;
+    const totalTimeSeconds = 10;
+    const getTimeRemaining = function (endTime) {
+      const total = Date.parse(endTime) - Date.parse(new Date().toISOString());
+      const seconds = Math.floor( (total/1000) % 60 );
+      const minutes = Math.floor( (total/1000/60) % 60 );
+      return {
+        total,
+        minutes,
+        seconds
+      };
+    }
+    const initializeClock = function($, id, endTime) {
+      const clock = document.getElementById(id);
+      const timeInterval = setInterval(() => {
+        const t = getTimeRemaining(endTime);
+        clock.innerHTML =  String(t.minutes).padStart(2, '0') + ':' + String(t.seconds).padStart(2, '0');
+        if (t.total <= 0) {
+          clock.innerHTML = '00:00';
+          clearInterval(timeInterval);
+          evaluateResults($, totalTimeSeconds);
+        }
+      },1000);
+    }
     const arrayToHtml = function ($, data, options) {
       "use strict";
       const outerDiv = $('<div />').addClass('columns');
@@ -131,7 +231,7 @@
           row.append($('<td />').addClass('op').addClass('digits').html(data[i][1]));
           row.append($('<td />').addClass('digits').html(data[i][2]));
           row.append($('<td />').addClass('eq').addClass('digits').html(data[i][3]));
-          row.append($('<td />').addClass('answer').html('<input class="answer-text" type="text" inputmode="numeric" x-inputmode="numeric" id="answer' + sl + '" name="answer' + sl + '" data-result="' + data[i][4] + '" maxlength="2" />'));
+          row.append($('<td />').addClass('answer').html('<label class="hidden" for="answer' + sl + '">' + data[i][5] + '=</label><input class="answer-text" type="text" inputmode="numeric" x-inputmode="numeric" id="answer' + sl + '" name="answer' + sl + '" data-result="' + data[i][4] + '" maxlength="2" tabindex="0"/>'));
           row.append($('<td />').html('&nbsp;&nbsp;'));
         }
         table.append(row);
@@ -141,8 +241,8 @@
       outerDiv.append(list);
       return outerDiv;
     };
-    const randomInRange = function(x,y) {
-      return x + crypto.getRandomValues(new Uint32Array(1))[0] % (y - x + 1);
+    const randomInRange = function (x,y) {
+      return x + crypto.getRandomValues(new Uint32Array(10))[Math.floor(Math.random() * 10)] % (y - x + 1);
     }
     const generate = function (max1, max2, op, num) {
       const data = [];
@@ -158,6 +258,7 @@
         row.push(String(op2).padStart(2, ' '));
         row.push('=');
         row.push(eval(output));
+        row.push(output);
         data.push(row);
       }
       return data;
@@ -171,7 +272,7 @@
       }
       return ar;
     };
-    function evaluateResults($, totalTimeSeconds) {
+    const evaluateResults = function ($, totalTimeSeconds) {
       let total = 0;
       let correct = 0;
       let attempted = 0;
@@ -192,33 +293,28 @@
           current.parents('li').addClass('incorrect');
         }
       });
-      $('#results').html(`You got ${correct} out of ${total} right (${attempted} attempted) in ${totalTimeSeconds} seconds!`).show();
+      $('#message').html(`You got ${correct} out of ${total} right (${attempted} attempted) in ${totalTimeSeconds} seconds!`).show();
     }
-    function populateTable($) {
-      const maxAddition1 = 20;
-      const maxAddition2 = 20;
-      const numAdditions = 20;
-      const maxSubtraction1 = 20;
-      const maxSubtraction2 = 20;
-      const numSubtractions = 10;
-      const maxMultiplication1 = 7;
-      const maxMultiplication2 = 10;
-      const numMultiplications = 10;
-      const totalTimeSeconds = 180;
 
-      const data = [];
-      data.push(...generate(maxAddition1, maxAddition2,'+', numAdditions))
-      data.push(...generate(maxSubtraction1, maxSubtraction2,'-', numSubtractions))
-      data.push(...generate(maxMultiplication1, maxMultiplication2,'X', numMultiplications))
-      const shuffleData = shuffle(data);
+    const data = [];
+    data.push(...generate(maxAddition1, maxAddition2,'+', numAdditions));
+    data.push(...generate(maxSubtraction1, maxSubtraction2,'-', numSubtractions));
+    data.push(...generate(maxMultiplication1, maxMultiplication2,'X', numMultiplications));
+
+    const populateTable = function($) {
       const table = arrayToHtml($, shuffleData, {
         attrs: {class: 'table'}
-      })
+      });
       $('#content').append(table);
-      setTimeout(evaluateResults, totalTimeSeconds * 1000, $, totalTimeSeconds);
     }
-    function initSlider($) {
+    const shuffleData = shuffle(data);
+    const initSlider = function ($) {
       populateTable($);
+      $('#message').html(`You got ${shuffleData.length} sums to do in ${totalTimeSeconds} seconds!`);
+      $('#start').click(function() {
+        $('#content').show();
+        initializeClock($, 'timer', new Date(new Date().getTime() + (totalTimeSeconds + 2) * 1000));
+      });
     }
     $(document).ready(function(){
       initSlider($);
