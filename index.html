@@ -5,10 +5,10 @@
   <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="pragma" content="no-cache" />
   <meta http-equiv="expires" content="0" />
-  <meta name="description" content="Maths - Sum Generator - v4">
+  <meta name="description" content="Maths - Sum Generator - v5">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Maths - Sum Generator - v4</title>
+  <title>Maths - Sum Generator - v5</title>
   <style>
     #page {
       margin: 0 auto;
@@ -39,6 +39,15 @@
       display: inline-block;
       width: 100%;
     }
+    .columns ul li.correct {
+      background-color: darkseagreen;
+    }
+    .columns ul li.incorrect {
+      background-color: indianred;
+    }
+    .columns ul li.not-attempted {
+      background-color: cornflowerblue;
+    }
     .serial-no {
       color: #303030;
       font-size: 10pt;
@@ -59,6 +68,30 @@
     table tr td.eq.digits {
       width: 1em;
     }
+    .answer-text {
+      width: 2em;
+      height: 1.5em;
+      padding: 0 18px 0 8px;
+      font-size: 18pt;
+      line-height: 1.5;
+      outline: none;
+      color: #191c5f;
+      background: transparent;
+      border: none transparent;
+      border-radius: 0;
+      border-bottom: 2px solid #191c5fa0;
+      -webkit-appearance: none;
+    }
+    #results {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background-color: #fdf978a0;
+      text-align: center;
+      font-size: 14pt;
+      width: 100%;
+    }
     @media print {
       @page { size: A4 landscape; }
       body {
@@ -72,7 +105,10 @@
 </head>
 <body>
 <div id="page">
-  <div id="content"></div>
+  <form method="POST" onsubmit="return false;">
+    <div id="content"></div>
+    <div id="results"></div>
+  </form>
   <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
   <script language="JavaScript">
     const arrayToHtml = function ($, data, options) {
@@ -83,20 +119,19 @@
         let listItem = $('<li />');
         let table = $('<table />'),
           defaults = {
-            attrs: {} // attributes for the table element, can be used to
+            attrs: {}
           };
         options = $.extend(defaults, options);
         table.attr(options.attrs);
         let row = $('<tr />');
+        let sl = i + 1;
         if(data[i][0] !== '') {
-          row.append($('<td />').addClass('serial-no').addClass('digits').html((i + 1) + '.'));
-
+          row.append($('<td />').addClass('serial-no').addClass('digits').html(sl + '.'));
           row.append($('<td />').addClass('digits').html(data[i][0]));
           row.append($('<td />').addClass('op').addClass('digits').html(data[i][1]));
           row.append($('<td />').addClass('digits').html(data[i][2]));
           row.append($('<td />').addClass('eq').addClass('digits').html(data[i][3]));
-
-          row.append($('<td />').addClass('answer').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'));
+          row.append($('<td />').addClass('answer').html('<input class="answer-text" type="text" inputmode="numeric" x-inputmode="numeric" id="answer' + sl + '" name="answer' + sl + '" data-result="' + data[i][4] + '" maxlength="2" />'));
           row.append($('<td />').html('&nbsp;&nbsp;'));
         }
         table.append(row);
@@ -115,10 +150,14 @@
         let row = [];
         let num1 = randomInRange(0, max1);
         let num2 = randomInRange(0, max2);
-        row.push(String(op !== '-' ? num1 : Math.max(num1, num2)).padStart(2, ' '));
+        let op1 = op !== '-' ? num1 : Math.max(num1, num2);
+        let op2 = op !== '-' ? num2 : Math.min(num1, num2);
+        let output = '' + String(op1) + (op.toLowerCase() === 'x' ? '*' : op) + String(op2);
+        row.push(String(op1).padStart(2, ' '));
         row.push(op);
-        row.push(String(op !== '-' ? num2 : Math.min(num1, num2)).padStart(2, ' '));
+        row.push(String(op2).padStart(2, ' '));
         row.push('=');
+        row.push(eval(output));
         data.push(row);
       }
       return data;
@@ -132,6 +171,29 @@
       }
       return ar;
     };
+    function evaluateResults($, totalTimeSeconds) {
+      let total = 0;
+      let correct = 0;
+      let attempted = 0;
+      $('.answer-text').each(function() {
+        let current = $(this);
+        let answerGiven = current.val();
+        total++;
+        current.attr('disabled', 'disabled');
+        if (answerGiven === current.attr('data-result')) {
+          correct++;
+          attempted++;
+          current.parents('li').addClass('correct');
+        } else if (answerGiven.trim().length === 0) {
+          current.parents('li').addClass('not-attempted');
+        }
+        else {
+          attempted++;
+          current.parents('li').addClass('incorrect');
+        }
+      });
+      $('#results').html(`You got ${correct} out of ${total} right (${attempted} attempted) in ${totalTimeSeconds} seconds!`).show();
+    }
     function populateTable($) {
       const maxAddition1 = 20;
       const maxAddition2 = 20;
@@ -142,16 +204,18 @@
       const maxMultiplication1 = 7;
       const maxMultiplication2 = 10;
       const numMultiplications = 10;
+      const totalTimeSeconds = 180;
 
       const data = [];
       data.push(...generate(maxAddition1, maxAddition2,'+', numAdditions))
       data.push(...generate(maxSubtraction1, maxSubtraction2,'-', numSubtractions))
       data.push(...generate(maxMultiplication1, maxMultiplication2,'X', numMultiplications))
-
-      const table = arrayToHtml($, shuffle(data), {
+      const shuffleData = shuffle(data);
+      const table = arrayToHtml($, shuffleData, {
         attrs: {class: 'table'}
       })
       $('#content').append(table);
+      setTimeout(evaluateResults, totalTimeSeconds * 1000, $, totalTimeSeconds);
     }
     function initSlider($) {
       populateTable($);
