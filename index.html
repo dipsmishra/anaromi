@@ -5,10 +5,10 @@
   <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="pragma" content="no-cache" />
   <meta http-equiv="expires" content="0" />
-  <meta name="description" content="Maths - Sum Generator - v6">
+  <meta name="description" content="Maths - Sum Generator - v7">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Maths - Sum Generator - v6</title>
+  <title>Maths - Sum Generator - v7</title>
   <link href='https://fonts.googleapis.com/css?family=Orbitron&text=0123456789:' rel='stylesheet' type='text/css'/>
   <style>
     #page {
@@ -32,6 +32,11 @@
       -moz-column-width: 10em;
       -webkit-column-width: 10em;
       column-width: 10em;
+    }
+    .columns.single-file {
+      -moz-column-width: 100em;
+      -webkit-column-width: 100em;
+      column-width: 100em;
     }
     .columns ul {
       margin: 0;
@@ -96,10 +101,11 @@
       border-radius: 0;
       border-bottom: 2px solid #191c5fa0;
       -webkit-appearance: none;
+      display: inline-block;
     }
     #results {
       position: fixed;
-      background-color: #fdf978;
+      background-color: #9dd0e2;
       text-align: center;
       font-family: monospace, sans-serif;
       font-weight: normal;
@@ -108,8 +114,7 @@
       line-height: 1.2;
       letter-spacing: normal;
       color: #191c5f;
-      width: 100%;
-
+      width: 98%;
       display: flex;
       flex-direction: row;
       flex-wrap: nowrap;
@@ -117,18 +122,27 @@
       align-items: center;
       align-content: flex-start;
     }
+    #results.final {
+      background-color: #fdf978;
+    }
     #results > div {
       text-align: left;
       padding: 0.25em 1em;
       align-self: center;
     }
-    #timer, #start {
+    #timer, #start, #done, #config {
       font-family: 'Orbitron', sans-serif;
       font-weight: bold;
-      font-size: 14pt;
-      width: 105px;
+      font-size: 12pt;
+      width: 90px;
       height: 30px;
       flex: none;
+      margin: 10px 5px;
+    }
+    #config {
+      border: none;
+      background: transparent;
+      -webkit-appearance: none;
     }
     #timer {
       line-height: 30px;
@@ -137,6 +151,27 @@
       font-size: 12pt;
       flex-grow: 1;
       flex-basis: auto;
+    }
+    #config-content label.config-label {
+      font-size: 12pt;
+      width: 16rem;
+      display: inline-block;
+      text-align: right;
+    }
+    h4 {
+      margin: 0;
+      padding: 0;
+      line-height: 1.1;
+      font-size: 14pt;
+    }
+    #config-content .answer-text {
+      height: 1.1em;
+      line-height: 1.1;
+      font-size: 14pt;
+    }
+    #config-content li {
+      line-height: 1.1;
+      display: inline;
     }
     .hidden {
       border: 0;
@@ -147,6 +182,12 @@
       padding: 0;
       position: absolute;
       width: 1px;
+    }
+    #content.hide-on-screen, #done.hide-on-screen {
+      display: none;
+    }
+    #content.show-on-screen {
+      display: block;
     }
     @media print {
       @page { size: A4 landscape; }
@@ -165,31 +206,42 @@
       #content {
         display: block;
       }
-      #start {
+      #start, #timer, #config, #done, #config-content, #done.hide-on-screen {
         display: none;
+      }
+      #content.hide-on-screen, #content.show-on-screen {
+        display: block;
       }
     }
   </style>
 </head>
 <body>
-<div id="results"><div id="timer"><button id="start">Start !</button></div><div id="message"></div></div>
+<div id="results"><button id="start">Start !</button><div id="timer"></div><div id="message"></div><button id="done" class="hide-on-screen">Done !</button><button id="config"><img id="edit-config" alt="config" height="24" width="24" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMTkuMC4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogNi4wMCBCdWlsZCAwKSAgLS0+CjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiCgkgdmlld0JveD0iMCAwIDUxMiA1MTIiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDUxMiA1MTI7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPGc+Cgk8Zz4KCQk8cGF0aCBkPSJNNDY4LjMwMiwyMTMuODAxdjAuMDAxYy01LjU0My0yOC4xMTctMTYuMzk0LTU0LjMzNi0zMi4zMzQtNzguMTIzbDMwLjkxNS0zMC45MTZsLTU5LjY0Ni01OS42NDZsLTMwLjkxNiwzMC45MTUKCQkJYy0yMy43ODctMTUuOTQtNTAuMDA2LTI2Ljc5Mi03OC4xMjMtMzIuMzM0VjBoLTg0LjM5NnY0My42OThjLTI4LjExNyw1LjU0My01NC4zMzYsMTYuMzk0LTc4LjEyMywzMi4zMzRsLTMwLjkxNi0zMC45MTUKCQkJbC01OS42NDYsNTkuNjQ2bDMwLjkxNSwzMC45MTZjLTE1Ljk0LDIzLjc4Ny0yNi43OTIsNTAuMDA2LTMyLjMzNCw3OC4xMjNIMHY4NC4zOTZoNDMuNjk4CgkJCWM1LjU0MiwyOC4xMTMsMTYuMzkxLDU0LjMyNywzMi4zMjcsNzguMTEzbC0zMC45MTEsMzAuNzk1bDU5LjY0NCw1OS43ODVsMzAuOTIzLTMwLjkyMWMyMy43ODgsMTUuOTQsNTAuMDA2LDI2Ljc5MSw3OC4xMjMsMzIuMzM0CgkJCVY1MTJoODQuMzk2di00My42OThjMjguMTE3LTUuNTQzLDU0LjMzNi0xNi4zOTQsNzguMTIzLTMyLjMzNGwzMC45MjMsMzAuOTIxbDU5LjY0NC01OS43ODVsLTMwLjkxMS0zMC43OTUKCQkJYzE1LjkzNi0yMy43ODUsMjYuNzg1LTUwLDMyLjMyNy03OC4xMTNINTEydi04NC4zOTZINDY4LjMwMnogTTQ5NS4xMjEsMjgxLjMxOUg0NTQuMDhsLTEuMTU5LDcuMDc2CgkJCWMtNS4wMDksMzAuNTgzLTE2LjcwNCw1OC44NDEtMzQuNzYxLDgzLjk4N2wtNC4xODgsNS44MzNsMjkuMDM3LDI4LjkyN2wtMzUuNzc5LDM1Ljg2NGwtMjkuMDI1LTI5LjAyNWwtNS44MjIsNC4xOAoJCQljLTI1LjE0OCwxOC4wNTctNTMuNDA0LDI5Ljc1Mi04My45ODcsMzQuNzYxbC03LjA3NiwxLjE1OXY0MS4wNGgtNTAuNjM3VjQ1NC4wOGwtNy4wNzYtMS4xNTkKCQkJYy0zMC41ODMtNS4wMDktNTguODQxLTE2LjcwNC04My45ODctMzQuNzYxbC01LjgyMi00LjE4bC0yOS4wMjUsMjkuMDI1bC0zNS43NzktMzUuODY0bDI5LjAzNy0yOC45MjdsLTQuMTg4LTUuODMzCgkJCWMtMTguMDU3LTI1LjE0OC0yOS43NTItNTMuNDA0LTM0Ljc2MS04My45ODdsLTEuMTU5LTcuMDc1SDE2Ljg3OXYtNTAuNjM3SDU3LjkybDEuMTU5LTcuMDc2CgkJCWM1LjAwOS0zMC41ODMsMTYuNzA0LTU4Ljg0MSwzNC43NjEtODMuOTg3bDQuMTgtNS44MjJsLTI5LjAzMy0yOS4wMzNsMzUuNzc2LTM1Ljc3NmwyOS4wMzMsMjkuMDMybDUuODIyLTQuMTgKCQkJYzI1LjE0OC0xOC4wNTcsNTMuNDA0LTI5Ljc1Miw4My45ODctMzQuNzYxbDcuMDc2LTEuMTU5di00MS4wNGg1MC42MzdWNTcuOTJsNy4wNzYsMS4xNTkKCQkJYzMwLjU4Myw1LjAwOSw1OC44NDEsMTYuNzA0LDgzLjk4NywzNC43NjFsNS44MjIsNC4xOGwyOS4wMzMtMjkuMDMybDM1Ljc3NiwzNS43NzVsLTI5LjAzMiwyOS4wMzNsNC4xOCw1LjgyMgoJCQljMTguMDU3LDI1LjE0OCwyOS43NTIsNTMuNDA0LDM0Ljc2MSw4My45ODdsMS4xNTksNy4wNzZoNDEuMDRWMjgxLjMxOXoiLz4KCTwvZz4KPC9nPgo8Zz4KCTxnPgoJCTxwYXRoIGQ9Ik0yNTYsMTAxLjI3NWMtODUuMzE2LDAtMTU0LjcyNSw2OS40MDktMTU0LjcyNSwxNTQuNzI1UzE3MC42ODQsNDEwLjcyNSwyNTYsNDEwLjcyNVM0MTAuNzI1LDM0MS4zMTYsNDEwLjcyNSwyNTYKCQkJUzM0MS4zMTYsMTAxLjI3NSwyNTYsMTAxLjI3NXogTTI2NC40NDEsMTE4LjQyMWM2OS4yOTksNC4yMDYsMTI0LjkzMiw1OS44NCwxMjkuMTQsMTI5LjE0aC02Ny43NzQKCQkJYy0zLjg1Mi0zMi4wNDMtMjkuMzIyLTU3LjUxNC02MS4zNjYtNjEuMzY2VjExOC40MjF6IE0yNDcuNTYsMTE4LjQxOXY2Ny43NzRjLTMyLjA0MywzLjg1Mi01Ny41MTQsMjkuMzIyLTYxLjM2Niw2MS4zNjZoLTY3Ljc3NAoJCQlDMTIyLjYyNywxNzguMjYsMTc4LjI2LDEyMi42MjcsMjQ3LjU2LDExOC40MTl6IE0yNDcuNTU5LDM5My41NzljLTY5LjI5OS00LjIwNi0xMjQuOTMyLTU5Ljg0LTEyOS4xNC0xMjkuMTRoNjcuNzc0CgkJCWMzLjg1MiwzMi4wNDMsMjkuMzIyLDU3LjUxNCw2MS4zNjYsNjEuMzY2VjM5My41Nzl6IE0yMDIuNTQ5LDI1NmMwLTI5LjQ3MiwyMy45NzktNTMuNDUxLDUzLjQ1MS01My40NTEKCQkJYzI5LjQ3MiwwLDUzLjQ1MSwyMy45NzksNTMuNDUxLDUzLjQ1MWMwLDI5LjQ3Mi0yMy45NzgsNTMuNDUxLTUzLjQ1MSw1My40NTFDMjI2LjUyOCwzMDkuNDUxLDIwMi41NDksMjg1LjQ3MiwyMDIuNTQ5LDI1NnoKCQkJIE0yNjQuNDQsMzkzLjU4MXYtNjcuNzc0YzMyLjA0My0zLjg1Miw1Ny41MTQtMjkuMzIyLDYxLjM2Ni02MS4zNjZoNjcuNzc0QzM4OS4zNzMsMzMzLjc0LDMzMy43NCwzODkuMzczLDI2NC40NCwzOTMuNTgxeiIvPgoJPC9nPgo8L2c+CjxnPgoJPGc+CgkJPHBhdGggZD0iTTI4MC4yNjksMTQzLjIxOGwtMy41MzcsMTYuNTA0YzM3Ljc5Miw4LjA5Nyw2Ny40NDQsMzcuNzQ3LDc1LjU0Myw3NS41MzdsMTYuNTA0LTMuNTM4CgkJCUMzNTkuMjksMTg3LjQ0NCwzMjQuNTQ3LDE1Mi43MDQsMjgwLjI2OSwxNDMuMjE4eiIvPgoJPC9nPgo8L2c+CjxnPgoJPGc+CgkJPHBhdGggZD0iTTIzMS43MywxNDMuMjE4Yy00NC4yNzgsOS40ODYtNzkuMDIxLDQ0LjIyNy04OC41MTEsODguNTA0bDE2LjUwNSwzLjUzOGM4LjA5OS0zNy43OSwzNy43NTEtNjcuNDQxLDc1LjU0Mi03NS41MzcKCQkJTDIzMS43MywxNDMuMjE4eiIvPgoJPC9nPgo8L2c+CjxnPgoJPGc+CgkJPHBhdGggZD0iTTE1OS43MjUsMjc2Ljc0bC0xNi41MDQsMy41MzhjOS40ODksNDQuMjc4LDQ0LjIzMiw3OS4wMTgsODguNTExLDg4LjUwNGwzLjUzNy0xNi41MDQKCQkJQzE5Ny40NzYsMzQ0LjE4LDE2Ny44MjMsMzE0LjUzLDE1OS43MjUsMjc2Ljc0eiIvPgoJPC9nPgo8L2c+CjxnPgoJPGc+CgkJPHBhdGggZD0iTTM1Mi4yNzUsMjc2Ljc0Yy04LjA5OSwzNy43OS0zNy43NTEsNjcuNDQxLTc1LjU0Miw3NS41MzdsMy41MzcsMTYuNTA0YzQ0LjI3OC05LjQ4Niw3OS4wMjEtNDQuMjI3LDg4LjUxMS04OC41MDQKCQkJTDM1Mi4yNzUsMjc2Ljc0eiIvPgoJPC9nPgo8L2c+CjxnPgoJPGc+CgkJPHBhdGggZD0iTTI1NiwyMTkuNDI5Yy0yMC4xNjUsMC0zNi41NzEsMTYuNDA2LTM2LjU3MSwzNi41NzFzMTYuNDA2LDM2LjU3MSwzNi41NzEsMzYuNTcxczM2LjU3MS0xNi40MDcsMzYuNTcxLTM2LjU3MQoJCQlTMjc2LjE2NSwyMTkuNDI5LDI1NiwyMTkuNDI5eiBNMjU2LDI3NS42OTJjLTEwLjg1OCwwLTE5LjY5Mi04LjgzNS0xOS42OTItMTkuNjkyczguODM1LTE5LjY5MiwxOS42OTItMTkuNjkyCgkJCXMxOS42OTIsOC44MzUsMTkuNjkyLDE5LjY5MlMyNjYuODU4LDI3NS42OTIsMjU2LDI3NS42OTJ6Ii8+Cgk8L2c+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPC9zdmc+Cg=="/></button></div>
 <div id="page">
   <form method="POST" onsubmit="return false;">
-    <div id="content"></div>
+    <div id="content" class="hide-on-screen"></div>
+    <div id="config-content">
+      <div class="columns single-file">
+        <ul>
+          <li><label for="amount0" class="config-label">Maximum Time (in seconds): </label><input class="answer-text" type="text" inputmode="numeric" x-inputmode="numeric" id="amount0" name="amount0" value="180" maxlength="3"/></li>
+          <li><h4>Addition</h4></li>
+          <li><label for="amount1" class="config-label">Maximum First Number: </label><input class="answer-text" type="text" inputmode="numeric" x-inputmode="numeric" id="amount1" name="amount1" value="20" maxlength="2"/></li>
+          <li><label for="amount2" class="config-label">Maximum Second Number: </label><input class="answer-text" type="text" inputmode="numeric" x-inputmode="numeric" id="amount2" name="amount2" value="20" maxlength="2"/></li>
+          <li><label for="amount3" class="config-label">Number of Sums: </label><input class="answer-text" type="text" inputmode="numeric" x-inputmode="numeric" id="amount3" name="amount3" value="20" maxlength="3"/></li>
+          <li><h4>Subtraction</h4></li>
+          <li><label for="amount4" class="config-label">Maximum First Number: </label><input class="answer-text" type="text" inputmode="numeric" x-inputmode="numeric" id="amount4" name="amount4" value="20" maxlength="2"/></li>
+          <li><label for="amount5" class="config-label">Maximum Second Number: </label><input class="answer-text" type="text" inputmode="numeric" x-inputmode="numeric" id="amount5" name="amount5" value="20" maxlength="2"/></li>
+          <li><label for="amount6" class="config-label">Number of Sums: </label><input class="answer-text" type="text" inputmode="numeric" x-inputmode="numeric" id="amount6" name="amount6" value="10" maxlength="3"/></li>
+          <li><h4>Multiplication</h4></li>
+          <li><label for="amount7" class="config-label">Maximum First Number: </label><input class="answer-text" type="text" inputmode="numeric" x-inputmode="numeric" id="amount7" name="amount7" value="20" maxlength="2"/></li>
+          <li><label for="amount8" class="config-label">Maximum Second Number: </label><input class="answer-text" type="text" inputmode="numeric" x-inputmode="numeric" id="amount8" name="amount8" value="20" maxlength="2"/></li>
+          <li><label for="amount9" class="config-label">Number of Sums: </label><input class="answer-text" type="text" inputmode="numeric" x-inputmode="numeric" id="amount9" name="amount9" value="10" maxlength="3"/></li>
+        </ul>
+      </div>
+    </div>
   </form>
   <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
-  <script language="JavaScript">
-    const maxAddition1 = 20;
-    const maxAddition2 = 20;
-    const numAdditions = 20;
-    const maxSubtraction1 = 20;
-    const maxSubtraction2 = 20;
-    const numSubtractions = 10;
-    const maxMultiplication1 = 7;
-    const maxMultiplication2 = 10;
-    const numMultiplications = 10;
-    const totalTimeSeconds = 180;
-    
+  <script>
     const getTimeRemaining = function (endTime) {
       const total = Date.parse(endTime) - Date.parse(new Date().toISOString());
       const seconds = Math.floor( (total/1000) % 60 );
@@ -200,15 +252,27 @@
         seconds
       };
     }
-    const initializeClock = function($, id, endTime) {
+    let timeInterval = undefined;
+    const initializeClock = function($, id, endTime, totalTimeInSeconds) {
       const clock = document.getElementById(id);
-      const timeInterval = setInterval(() => {
-        const t = getTimeRemaining(endTime);
-        clock.innerHTML =  String(t.minutes).padStart(2, '0') + ':' + String(t.seconds).padStart(2, '0');
+      $(clock).attr('data-status', 'ticking');
+      $(clock).attr('data-elapsed', '-1');
+      $(clock).attr('data-endTime', endTime);
+      if (timeInterval) {
+        clearInterval(timeInterval);
+      }
+      timeInterval = setInterval(() => {
+        const t = getTimeRemaining($(clock).attr('data-endTime'));
         if (t.total <= 0) {
-          clock.innerHTML = '00:00';
           clearInterval(timeInterval);
-          evaluateResults($, totalTimeSeconds);
+          if ($(clock).attr('data-status') === 'ticking') {
+            clock.innerHTML = '00:00';
+            $(clock).attr('data-status', 'stopped');
+            evaluateResults($, totalTimeInSeconds);
+          }
+        } else if ($(clock).attr('data-status') === 'ticking') {
+          $(clock).attr('data-elapsed', Number($(clock).attr('data-elapsed') ?? 0) + 1);
+          clock.innerHTML =  String(t.minutes).padStart(2, '0') + ':' + String(t.seconds).padStart(2, '0');
         }
       },1000);
     }
@@ -232,8 +296,8 @@
           row.append($('<td />').addClass('op').addClass('digits').html(data[i][1]));
           row.append($('<td />').addClass('digits').html(data[i][2]));
           row.append($('<td />').addClass('eq').addClass('digits').html(data[i][3]));
-          row.append($('<td />').addClass('answer').html('<label class="hidden" for="answer' + sl + '">' + data[i][5] + '=</label><input class="answer-text" type="text" inputmode="numeric" x-inputmode="numeric" id="answer' + sl + '" name="answer' + sl + '" data-result="' + data[i][4] + '" maxlength="2" tabindex="0"/>'));
-          row.append($('<td />').html('&nbsp;&nbsp;'));
+          row.append($('<td />').addClass('answer').html('<label class="hidden" for="answer' + sl + '">' + data[i][5] + '=</label><input class="answer-text" type="text" inputmode="numeric" x-inputmode="numeric" id="answer' + sl + '" name="answer' + sl + '" data-result="' + data[i][4] + '" maxlength="4" tabindex="0"/>'));
+          row.append($('<td />').html('&nbsp;'));
         }
         table.append(row);
         listItem.append(table);
@@ -273,11 +337,11 @@
       }
       return ar;
     };
-    const evaluateResults = function ($, totalTimeSeconds) {
+    const evaluateResults = function ($, totalTimeElapsedSeconds) {
       let total = 0;
       let correct = 0;
       let attempted = 0;
-      $('.answer-text').each(function() {
+      $('#content .answer-text').each(function() {
         let current = $(this);
         let answerGiven = current.val();
         total++;
@@ -294,27 +358,71 @@
           current.parents('li').addClass('incorrect');
         }
       });
-      $('#message').html(`You got ${correct} out of ${total} right (${attempted} attempted) in ${totalTimeSeconds} seconds!`).show();
+      $('#results').addClass('final');
+      $('#done').addClass('hide-on-screen');
+      $('#timer').hide();
+      $('#timer').attr('data-status', 'stopped');
+      $('#start').show();
+      $('#config').show();
+      $('#message').html(`${correct}/${total} correct (${ attempted - correct} incorrect) in ${totalTimeElapsedSeconds} seconds!`).show();
     }
-
-    const data = [];
-    data.push(...generate(maxAddition1, maxAddition2,'+', numAdditions));
-    data.push(...generate(maxSubtraction1, maxSubtraction2,'-', numSubtractions));
-    data.push(...generate(maxMultiplication1, maxMultiplication2,'X', numMultiplications));
-
     const populateTable = function($) {
-      const table = arrayToHtml($, shuffleData, {
-        attrs: {class: 'table'}
+      const totalTimeSetSeconds = Math.max(Number($('#amount0').val() ?? 180), 0);
+      const createProblemsToSolve = function($, totalTimeSetSeconds) {
+        $('#timer').hide();
+        const maxAddition1 = Math.max(Number($('#amount1').val() ?? 20), 0);
+        const maxAddition2 = Math.max(Number($('#amount2').val() ?? 20), 0);
+        const numAdditions = Math.max(Number($('#amount3').val() ?? 20), 0);
+        const maxSubtraction1 = Math.max(Number($('#amount4').val() ?? 20), 0);
+        const maxSubtraction2 = Math.max(Number($('#amount5').val() ?? 20), 0);
+        const numSubtractions = Math.max(Number($('#amount6').val() ?? 10), 0);
+        const maxMultiplication1 = Math.max(Number($('#amount7').val() ?? 7), 0);
+        const maxMultiplication2 = Math.max(Number($('#amount8').val() ?? 10), 0);
+        const numMultiplications = Math.max(Number($('#amount9').val() ?? 10), 0);
+        const data = [];
+        data.push(...generate(maxAddition1, maxAddition2,'+', numAdditions));
+        data.push(...generate(maxSubtraction1, maxSubtraction2,'-', numSubtractions));
+        data.push(...generate(maxMultiplication1, maxMultiplication2,'X', numMultiplications));
+        const shuffleData = shuffle(data);
+        const table = arrayToHtml($, shuffleData, {
+          attrs: {class: 'table'}
+        });
+        $('#results').removeClass('final');
+        $('#message').html(`${shuffleData.length} problems in ${totalTimeSetSeconds} seconds!`);
+        $('#content').html('').append(table);
+      }
+      $('#start').click(function() {
+        const totalTimeSetSeconds = Math.max(Number($('#amount0').val() ?? 180), 0);
+        createProblemsToSolve($, totalTimeSetSeconds);
+        $('#content').show();
+        $('#config').hide();
+        $('#start').hide();
+        $('#config-content').hide();
+        $('#done').removeClass('hide-on-screen');
+        initializeClock($, 'timer', new Date(new Date().getTime() + (totalTimeSetSeconds + 2) * 1000), totalTimeSetSeconds);
+        $('#timer').show();
       });
-      $('#content').append(table);
+      createProblemsToSolve($, totalTimeSetSeconds);
     }
-    const shuffleData = shuffle(data);
     const initSlider = function ($) {
       populateTable($);
-      $('#message').html(`You got ${shuffleData.length} sums to do in ${totalTimeSeconds} seconds!`);
-      $('#start').click(function() {
-        $('#content').show();
-        initializeClock($, 'timer', new Date(new Date().getTime() + (totalTimeSeconds + 2) * 1000));
+      $('#done').click(function() {
+        const clock = $('#timer');
+        $('#done').addClass('hide-on-screen');
+        $('#config').show();
+        clock.attr('data-status', 'stopped');
+        evaluateResults($, clock.attr('data-elapsed') || 0);
+      });
+      $('#config').click(function() {
+        const content = $('#content');
+        content.css('display', '');
+        if ($('#results').hasClass('final')) {
+          if (content.hasClass('hide-on-screen')) {
+            content.removeClass('hide-on-screen').addClass('show-on-screen');
+          }
+          content.toggleClass('show-on-screen');
+        }
+        $('#config-content').toggle();
       });
     }
     $(document).ready(function(){
